@@ -18,7 +18,7 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CoinService } from './coin.service';
 import { CreateCoinDto } from './dto/create-coin.dto';
 import { UpdateCoinDto } from './dto/update-coin.dto';
-import { CoinModel } from './coin.model';
+import { Coin } from './coin.model';
 
 @Controller('coin')
 export class CoinController {
@@ -28,13 +28,18 @@ export class CoinController {
   ) {}
 
   @ApiOperation({ summary: 'Create coin' })
-  @ApiResponse({ status: 200, type: CoinModel })
+  @ApiResponse({ status: 200, type: Coin })
   @Post('/createCoin')
   async create(@Body() createCoinDto: CreateCoinDto, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
+
     try {
-      const newCoin: any = await this.coinService.createCoin(createCoinDto);
+      const newCoin: Coin = await this.coinService.createCoin(
+        createCoinDto,
+        session,
+      );
+
       await session.commitTransaction();
       return res.status(HttpStatus.CREATED).send(newCoin);
     } catch (error) {

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateCoinDto {
   @ApiProperty({ example: 'BTC', description: 'Name' })
@@ -8,7 +8,7 @@ export class CreateCoinDto {
   name: string;
 
   @ApiProperty({ example: '60.000', description: 'Purchase price' })
-  @IsString({ message: 'Must be a number' })
+  @IsNumber()
   @IsNotEmpty()
   purchasePrice: number;
 

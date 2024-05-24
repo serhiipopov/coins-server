@@ -3,18 +3,19 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { CoinService } from './coin.service';
 import { CoinController } from './coin.controller';
-import { CoinModel, CoinSchema } from './coin.model';
+import { Coin, CoinSchema } from './coin.model';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {
-        name: CoinModel.name,
+        name: Coin.name,
         schema: CoinSchema,
       },
     ]),
   ],
   controllers: [CoinController],
   providers: [CoinService],
+  exports: [CoinService],
 })
 export class CoinModule {}

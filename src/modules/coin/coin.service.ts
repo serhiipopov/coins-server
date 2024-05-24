@@ -1,19 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { ClientSession, Model } from 'mongoose';
 
-import { CoinModel } from './coin.model';
+import { Coin } from './coin.model';
 import { CreateCoinDto } from './dto/create-coin.dto';
 import { UpdateCoinDto } from './dto/update-coin.dto';
 
 @Injectable()
 export class CoinService {
-  constructor(@InjectModel(CoinModel.name) private readonly coinModel: Model<CoinModel>) {}
-  async createCoin(createCoinDto: CreateCoinDto) {
-    const coin = await this.coinModel.create({ ...createCoinDto });
-    await coin.save();
+  constructor(
+    @InjectModel(Coin.name) private readonly coinModel: Model<Coin>,
+  ) {}
+  async createCoin(createCoinDto: CreateCoinDto, session: ClientSession) {
+    const coin = await this.coinModel.create({
+      name: createCoinDto.name,
+      purchasePrice: createCoinDto.purchasePrice,
+      reasonForPurchase: createCoinDto.reasonForPurchase,
+    });
 
-    return coin;
+    return await coin.save({ session });
   }
 
   findAll() {

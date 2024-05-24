@@ -1,22 +1,22 @@
-import { Document } from 'mongoose';
+import { Document, Schema } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop } from '@nestjs/mongoose';
 
-export class CoinModel extends Document {
+export class Coin extends Document {
   @ApiProperty({ example: 'name', description: 'name' })
-  @Prop({ required: true })
+  @Prop()
   name: string;
 
   @ApiProperty({ example: 'purchasePrice', description: 'purchasePrice' })
-  @Prop({ required: false })
-  purchasePrice: number;
+  @Prop()
+  purchasePrice: string;
 
   @ApiProperty({
     example: 'reasonForPurchase',
     description: 'reasonForPurchase',
   })
   @Prop()
-  reasonForPurchase: string;
+  reasonForPurchase: number;
 
   @ApiProperty({ example: 'averagePrice', description: 'averagePrice' })
   @Prop()
@@ -29,6 +29,38 @@ export class CoinModel extends Document {
   @ApiProperty({ example: 'reasonForSale', description: 'reasonForSale' })
   @Prop()
   reasonForSale: string;
+
+  @Prop()
+  createdAt: Date;
 }
 
-export const CoinSchema = SchemaFactory.createForClass(CoinModel);
+export const CoinSchema: Schema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    purchasePrice: {
+      type: Number,
+      min: 0,
+      required: true,
+    },
+    reasonForPurchase: {
+      type: String,
+    },
+    averagePrice: {
+      type: Number,
+    },
+    sellingPrice: {
+      type: Number,
+    },
+    reasonForSale: {
+      type: String,
+    },
+  },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
+);

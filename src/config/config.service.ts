@@ -31,8 +31,6 @@ export class ConfigService {
         this.get('MONGO_HOST') +
         '/' +
         this.get('MONGO_DATABASE'),
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
     };
   }
 }

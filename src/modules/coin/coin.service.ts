@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model } from 'mongoose';
 
@@ -25,8 +25,17 @@ export class CoinService {
     return `This action returns all coin`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} coin`;
+  async findOneById(id: string): Promise<Coin> {
+    try {
+      const coin = await this.coinModel.findById(id).exec();
+      if (!coin) {
+        throw new InternalServerErrorException('Coin not found');
+      }
+
+      return coin;
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   update(id: number, updateCoinDto: UpdateCoinDto) {

@@ -9,6 +9,8 @@ import {
   HttpStatus,
   BadRequestException,
   Res,
+  HttpCode,
+  NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { InjectConnection } from '@nestjs/mongoose';
@@ -39,8 +41,8 @@ export class CoinController {
         createCoinDto,
         session,
       );
-
       await session.commitTransaction();
+
       return res.status(HttpStatus.CREATED).send(newCoin);
     } catch (error) {
       await session.abortTransaction();
@@ -55,9 +57,24 @@ export class CoinController {
     return this.coinService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.coinService.findOne(+id);
+  @HttpCode(200)
+  @Get('/getCoin/:id')
+  async findOneById(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const coin = await this.coinService.findOneById(id);
+
+      return res.status(HttpStatus.OK).send(coin);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .send({ message: error.message });
+      } else {
+        return res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .send({ message: error.message });
+      }
+    }
   }
 
   @Patch(':id')

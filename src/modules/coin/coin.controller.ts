@@ -82,8 +82,22 @@ export class CoinController {
     return this.coinService.update(+id, updateCoinDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.coinService.remove(+id);
+  @HttpCode(200)
+  @Delete('/deleteCoin/:id')
+  async remove(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const result = await this.coinService.remove(id);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: error.message });
+      } else {
+        return res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: error.message });
+      }
+    }
   }
 }

@@ -25,14 +25,14 @@ export class CoinService {
     return `This action returns all coin`;
   }
 
-  async findOneById(id: string): Promise<Coin> {
+  async findOneById(id: string): Promise<{ coin?: Coin; message?: string }> {
     try {
-      const coin = await this.coinModel.findById(id).exec();
+      const coin: Coin = await this.coinModel.findById(id).exec();
       if (!coin) {
-        throw new InternalServerErrorException('Coin not found');
+        return { message: 'Coin not found' };
       }
 
-      return coin;
+      return { coin };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -42,7 +42,16 @@ export class CoinService {
     return `This action updates a #${id} coin`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} coin`;
+  async remove(id: string) {
+    const coin = await this.findOneById(id);
+
+    try {
+      if (coin) {
+        await this.coinModel.deleteOne({ _id: id }).exec();
+        return { message: 'Coin successfully deleted' };
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }

@@ -9,14 +9,14 @@ export class Coin extends Document {
 
   @ApiProperty({ example: 'purchasePrice', description: 'purchasePrice' })
   @Prop()
-  purchasePrice: string;
+  purchasePrice: number;
 
   @ApiProperty({
     example: 'reasonForPurchase',
     description: 'reasonForPurchase',
   })
   @Prop()
-  reasonForPurchase: number;
+  reasonForPurchase: string;
 
   @ApiProperty({ example: 'averagePrice', description: 'averagePrice' })
   @Prop()
@@ -29,9 +29,6 @@ export class Coin extends Document {
   @ApiProperty({ example: 'reasonForSale', description: 'reasonForSale' })
   @Prop()
   reasonForSale: string;
-
-  @Prop()
-  createdAt: Date;
 }
 
 export const CoinSchema: Schema = new Schema(

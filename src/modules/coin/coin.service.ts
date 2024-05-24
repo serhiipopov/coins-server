@@ -21,25 +21,37 @@ export class CoinService {
     return await coin.save({ session });
   }
 
-  findAll() {
-    return `This action returns all coin`;
-  }
-
-  async findOneById(id: string): Promise<{ coin?: Coin; message?: string }> {
+  async findOneById(id: string): Promise<Coin> {
     try {
       const coin: Coin = await this.coinModel.findById(id).exec();
-      if (!coin) {
-        return { message: 'Coin not found' };
-      }
-
-      return { coin };
+      return coin;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  update(id: number, updateCoinDto: UpdateCoinDto) {
-    return `This action updates a #${id} coin`;
+  async update(
+    id: string,
+    updateCoinDto: UpdateCoinDto,
+    session: ClientSession,
+  ) {
+    let coin: Coin;
+
+    try {
+      coin = await this.coinModel.findOne({ _id: id });
+
+      coin.name = updateCoinDto.name ?? coin.name;
+      coin.purchasePrice = updateCoinDto.purchasePrice ?? coin.purchasePrice;
+      coin.reasonForPurchase =
+        updateCoinDto.reasonForPurchase ?? coin.reasonForPurchase;
+      coin.sellingPrice = updateCoinDto.sellingPrice ?? coin.sellingPrice;
+      coin.reasonForSale = updateCoinDto.reasonForSale ?? coin.reasonForSale;
+
+      await coin.save({ session });
+      return coin;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   async remove(id: string) {
@@ -53,5 +65,9 @@ export class CoinService {
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
+  }
+
+  findAll() {
+    return `This action returns all coin`;
   }
 }

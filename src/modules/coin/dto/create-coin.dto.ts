@@ -19,4 +19,28 @@ export class CreateCoinDto {
   @IsOptional()
   @IsString()
   reasonForPurchase: string;
+
+  @ApiProperty({
+    example: '300',
+    description: 'Average Price',
+  })
+  @IsOptional()
+  @IsNumber()
+  averagePrice: number;
+
+  @ApiProperty({
+    example: '3000',
+    description: 'Selling Price',
+  })
+  @IsOptional()
+  @IsNumber()
+  sellingPrice: number;
+
+  @ApiProperty({
+    example: '3000',
+    description: 'Selling Price',
+  })
+  @IsOptional()
+  @IsString()
+  reasonForSale: string;
 }

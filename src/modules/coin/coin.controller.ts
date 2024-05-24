@@ -6,10 +6,10 @@ import {
   Patch,
   Param,
   Delete,
-  HttpStatus,
-  BadRequestException,
   Res,
   HttpCode,
+  HttpStatus,
+  BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -52,11 +52,6 @@ export class CoinController {
     }
   }
 
-  @Get()
-  findAll() {
-    return this.coinService.findAll();
-  }
-
   @HttpCode(200)
   @Get('/getCoin/:id')
   async findOneById(@Param('id') id: string, @Res() res: Response) {
@@ -77,9 +72,36 @@ export class CoinController {
     }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCoinDto: UpdateCoinDto) {
-    return this.coinService.update(+id, updateCoinDto);
+  @Patch('/editCoin/:id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateCoinDto: UpdateCoinDto,
+    @Res() res: Response,
+  ) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
+    try {
+      const updatedCoin = await this.coinService.update(
+        id,
+        updateCoinDto,
+        session,
+      );
+      await session.commitTransaction();
+      return res.status(HttpStatus.OK).json(updatedCoin);
+    } catch (error) {
+      await session.abortTransaction();
+      if (error instanceof NotFoundException) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: error.message });
+      } else {
+        return res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: error.message });
+      }
+    } finally {
+      await session.endSession();
+    }
   }
 
   @HttpCode(200)
@@ -99,5 +121,10 @@ export class CoinController {
           .json({ message: error.message });
       }
     }
+  }
+
+  @Get()
+  findAll() {
+    return this.coinService.findAll();
   }
 }

@@ -80,12 +80,37 @@ export class PortfolioController {
     }
   }
 
-  @Patch(':id')
-  update(
+  @Patch('/editPortfolio/:id')
+  async update(
     @Param('id') id: string,
     @Body() updatePortfolioDto: UpdatePortfolioDto,
+    @Res() res: Response,
   ) {
-    return this.portfolioService.update(+id, updatePortfolioDto);
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
+
+    try {
+      const updatedPortfolio = await this.portfolioService.update(
+        id,
+        updatePortfolioDto,
+        session,
+      );
+      await session.commitTransaction();
+      return res.status(HttpStatus.OK).json(updatedPortfolio);
+    } catch (error) {
+      await session.abortTransaction();
+      if (error instanceof NotFoundException) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: error.message });
+      } else {
+        return res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: error.message });
+      }
+    } finally {
+      await session.endSession();
+    }
   }
 
   @Delete(':id')

@@ -29,8 +29,22 @@ export class PortfolioService {
     }
   }
 
-  update(id: number, updatePortfolioDto: UpdatePortfolioDto) {
-    return `This action updates a #${id} portfolio`;
+  async update(
+    id: string,
+    updatePortfolioDto: UpdatePortfolioDto,
+    session: ClientSession,
+  ) {
+    let portfolio: Portfolio;
+
+    try {
+      portfolio = await this.portfolioModel.findOne({ _id: id });
+      portfolio.name = updatePortfolioDto.name ?? portfolio.name;
+      await portfolio.save({ session });
+
+      return portfolio;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   remove(id: number) {

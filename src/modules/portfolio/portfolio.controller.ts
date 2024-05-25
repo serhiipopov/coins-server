@@ -9,6 +9,8 @@ import {
   Res,
   HttpStatus,
   BadRequestException,
+  HttpCode,
+  NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { InjectConnection } from '@nestjs/mongoose';
@@ -58,9 +60,24 @@ export class PortfolioController {
     return this.portfolioService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.portfolioService.findOne(+id);
+  @HttpCode(200)
+  @Get('/getPortfolio/:id')
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const portfolio = await this.portfolioService.findOne(id);
+
+      return res.status(HttpStatus.OK).send(portfolio);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .send({ message: error.message });
+      } else {
+        return res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .send({ message: error.message });
+      }
+    }
   }
 
   @Patch(':id')

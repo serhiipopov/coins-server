@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ClientSession, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
@@ -21,12 +21,12 @@ export class PortfolioService {
     return await portfolio.save({ session });
   }
 
-  findAll() {
-    return `This action returns all portfolio`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} portfolio`;
+  async findOne(id: string): Promise<Portfolio> {
+    try {
+      return await this.portfolioModel.findById(id).exec();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   update(id: number, updatePortfolioDto: UpdatePortfolioDto) {
@@ -35,5 +35,9 @@ export class PortfolioService {
 
   remove(id: number) {
     return `This action removes a #${id} portfolio`;
+  }
+
+  findAll() {
+    return `This action returns all portfolio`;
   }
 }

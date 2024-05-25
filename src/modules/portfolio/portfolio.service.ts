@@ -47,8 +47,17 @@ export class PortfolioService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} portfolio`;
+  async remove(id: string) {
+    const portfolio = await this.findOne(id);
+
+    try {
+      if (portfolio) {
+        await this.portfolioModel.deleteOne({ _id: id }).exec();
+        return { message: 'Portfolio successfully deleted' };
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   findAll() {

@@ -55,11 +55,6 @@ export class PortfolioController {
     }
   }
 
-  @Get()
-  findAll() {
-    return this.portfolioService.findAll();
-  }
-
   @HttpCode(200)
   @Get('/getPortfolio/:id')
   async findOne(@Param('id') id: string, @Res() res: Response) {
@@ -113,8 +108,27 @@ export class PortfolioController {
     }
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.portfolioService.remove(+id);
+  @HttpCode(200)
+  @Delete('/deletePortfolio/:id')
+  async remove(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const result = await this.portfolioService.remove(id);
+      return res.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: error.message });
+      } else {
+        return res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: error.message });
+      }
+    }
+  }
+
+  @Get()
+  findAll() {
+    return this.portfolioService.findAll();
   }
 }

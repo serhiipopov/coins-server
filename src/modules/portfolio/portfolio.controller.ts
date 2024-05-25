@@ -1,15 +1,56 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Res,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
+import { Response } from 'express';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+
 import { PortfolioService } from './portfolio.service';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
+import { Portfolio } from './portfolio.model';
 
 @Controller('portfolio')
 export class PortfolioController {
-  constructor(private readonly portfolioService: PortfolioService) {}
+  constructor(
+    @InjectConnection() private readonly mongoConnection: Connection,
+    private readonly portfolioService: PortfolioService,
+  ) {}
 
-  @Post()
-  create(@Body() createPortfolioDto: CreatePortfolioDto) {
-    return this.portfolioService.create(createPortfolioDto);
+  @ApiOperation({ summary: 'Create portfolio' })
+  @ApiResponse({ status: 200, type: Portfolio })
+  @Post('/createPortfolio')
+  async create(
+    @Body() createPortfolioDto: CreatePortfolioDto,
+    @Res() res: Response,
+  ) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
+
+    try {
+      const newPortfolio = await this.portfolioService.create(
+        createPortfolioDto,
+        session,
+      );
+      await session.commitTransaction();
+
+      return res.status(HttpStatus.CREATED).send(newPortfolio);
+    } catch (error) {
+      await session.abortTransaction();
+      throw new BadRequestException(error);
+    } finally {
+      await session.endSession();
+    }
   }
 
   @Get()
@@ -23,7 +64,10 @@ export class PortfolioController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePortfolioDto: UpdatePortfolioDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updatePortfolioDto: UpdatePortfolioDto,
+  ) {
     return this.portfolioService.update(+id, updatePortfolioDto);
   }
 
